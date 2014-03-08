@@ -1,12 +1,14 @@
 (ns superclj.65816)
 
 (defn new-cpu []
-  {:a 0
-   :x 0
-   :y 0
-   :direct-page 0
-   :sp 0
-   :pc 0
-   :program-bank 0
-   :data-bank 0
-   :status 0})
+  {:emulation-mode 1
+   :registers {
+               :a 0x00
+               :x 0x00
+               :y 0x00
+               :direct-page 0x0000
+               :sp 0
+               :pc 0
+               :program-bank 0x00
+               :data-bank 0x00
+               :status 0}})
