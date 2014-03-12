@@ -1,6 +1,5 @@
 (ns superclj.asm)
 
-
 (defn- assemble-one [ins]
   (cond
    (= ins '(clc)) [0x18]

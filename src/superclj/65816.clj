@@ -18,10 +18,10 @@
 (defn- pc [cpu]
   ((cpu :registers) :pc))
 
-(defn- status [cpu]
+(defn status [cpu]
   ((cpu :registers) :status))
 
-(defn- carry [cpu]
+(defn carry [cpu]
   (bit-and (status cpu) 0x1))
 
 (defn- increment-pc [cpu]
@@ -44,22 +44,22 @@
     [cpu mem]))
 
 (defn clc [cpu mem]
-  (let* [new-status (bit-and (status cpu) 2r11111110)
-         new-cpu (assoc-in cpu [:registers :status] new-status)]
+  (let [new-status (bit-and (status cpu) 2r11111110)
+        new-cpu (assoc-in cpu [:registers :status] new-status)]
     [new-cpu mem]))
 
 (defn sec [cpu mem]
-  (let* [new-status (bit-or (status cpu) 0x1)
-         new-cpu (assoc-in cpu [:registers :status] new-status)]
+  (let [new-status (bit-or (status cpu) 0x1)
+        new-cpu (assoc-in cpu [:registers :status] new-status)]
     [new-cpu mem]))
 
 (defn xce [cpu mem]
   (let [new-status (assign-bit (status cpu) 0 (cpu :emulation-mode))
-        new-emulation-mode (carry cpu)]
-    [(assoc-in (assoc cpu :emulation-mode new-emulation-mode)
-               [:registers :status]
-               new-status)
-     mem]))
+        new-emulation-mode (carry cpu)
+        new-cpu (-> cpu
+                    (assoc :emulation-mode new-emulation-mode)
+                    (assoc-in [:registers :status] new-status))]
+    [new-cpu mem]))
 
 (def opcodes {
               0x18 clc
