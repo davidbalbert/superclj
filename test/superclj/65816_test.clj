@@ -43,6 +43,11 @@
 (deftest tay-should-transfer-a-to-y
   (let [start-cpu (assoc (new-cpu) :a 0x10)
         end-cpu (first (run-asm start-cpu '((tay))))]
-    (is (+ 0x10 (:y end-cpu)))))
+    (is (= 0x10 (:y end-cpu)))))
+
+(deftest txa-should-transfer-x-to-a
+  (let [start-cpu (assoc (new-cpu) :x 0x10)
+        end-cpu (first (run-asm start-cpu '((txa))))]
+    (is (= 0x10 (:a end-cpu)))))
 
 (run-tests)

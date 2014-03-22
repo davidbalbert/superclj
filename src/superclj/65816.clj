@@ -73,6 +73,10 @@
   (let [new-cpu (assoc cpu :y (cpu :a))]
     [new-cpu mem]))
 
+(defn txa [cpu mem]
+  (let [new-cpu (assoc cpu :a (cpu :x))]
+    [new-cpu mem]))
+
 (swap! opcodes (fn [_]
                  {
                   0x18 clc
@@ -80,4 +84,5 @@
                   0xFB xce
                   0x9B txy
                   0xAA tax
-                  0xA8 tay}))
+                  0xA8 tay
+                  0x8A txa}))
