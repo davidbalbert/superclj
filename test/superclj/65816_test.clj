@@ -6,10 +6,10 @@
 (def c (new-cpu))
 
 (defn with-carry-set [cpu]
-  (assoc-in cpu [:registers :status] (bit-set (status cpu) 0)))
+  (assoc cpu :status (bit-set (status cpu) 0)))
 
 (defn with-carry-cleared [cpu]
-  (assoc-in cpu [:registers :status] (bit-clear (status cpu) 0)))
+  (assoc cpu :status (bit-clear (status cpu) 0)))
 
 (deftest clc-should-clear-carry
   (let [start-cpu (with-carry-set c)

@@ -6,29 +6,28 @@
 
 (defn new-cpu []
   {:emulation-mode 0x1
-   :registers {
-               :a 0x00
-               :x 0x00
-               :y 0x00
-               :direct-page 0x0000
-               :sp 0
-               :pc 0
-               :program-bank 0x00
-               :data-bank 0x00
-               :status 2r00110000}})
+   :a 0x00
+   :x 0x00
+   :y 0x00
+   :direct-page 0x0000
+   :sp 0
+   :pc 0
+   :program-bank 0x00
+   :data-bank 0x00
+   :status 2r00110000})
 
 (defn- pc [cpu]
-  ((cpu :registers) :pc))
+  (cpu :pc))
 
 (defn status [cpu]
-  ((cpu :registers) :status))
+  (cpu :status))
 
 (defn carry [cpu]
   (bit-and (status cpu) 0x1))
 
 (defn- increment-pc [cpu]
   (let [new-pc (inc (pc cpu))]
-    (assoc-in cpu [:registers :pc] new-pc)))
+    (assoc cpu :pc new-pc)))
 
 (defn- assign-bit [byte position value]
   (if (zero? value)
@@ -47,12 +46,12 @@
 
 (defn clc [cpu mem]
   (let [new-status (bit-and (status cpu) 2r11111110)
-        new-cpu (assoc-in cpu [:registers :status] new-status)]
+        new-cpu (assoc cpu :status new-status)]
     [new-cpu mem]))
 
 (defn sec [cpu mem]
   (let [new-status (bit-or (status cpu) 0x1)
-        new-cpu (assoc-in cpu [:registers :status] new-status)]
+        new-cpu (assoc cpu :status new-status)]
     [new-cpu mem]))
 
 (defn xce [cpu mem]
@@ -60,7 +59,7 @@
         new-emulation-mode (carry cpu)
         new-cpu (-> cpu
                     (assoc :emulation-mode new-emulation-mode)
-                    (assoc-in [:registers :status] new-status))]
+                    (assoc :status new-status))]
     [new-cpu mem]))
 
 (swap! opcodes (fn [_]
