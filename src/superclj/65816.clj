@@ -2,6 +2,8 @@
   (:require [superclj.memory :as mem]
             [superclj.asm :as asm]))
 
+(def opcodes (atom {}))
+
 (defn new-cpu []
   {:emulation-mode 0x1
    :registers {
@@ -35,7 +37,7 @@
 
 (defn step [cpu mem]
   (let [opcode (mem/load-byte mem (pc cpu))]
-    ((opcodes opcode) (increment-pc cpu) mem)))
+    ((@opcodes opcode) (increment-pc cpu) mem)))
 
 (defn run [cpu mem]
   (if (< (pc cpu) (count mem))
@@ -61,8 +63,8 @@
                     (assoc-in [:registers :status] new-status))]
     [new-cpu mem]))
 
-(def opcodes {
-              0x18 clc
-              0x38 sec
-              0xFB xce
-              })
+(swap! opcodes (fn [_]
+                 {
+                   0x18 clc
+                   0x38 sec
+                   0xFB xce}))
