@@ -16,7 +16,7 @@
 
 (deftest test-double
   (let [memory (store-double (am) 0x2000 0x1234)]
-    (is (= 0x1234 (load-double memory 0x10)))))
+    (is (= 0x1234 (load-double memory 0x2000)))))
 
 (deftest test-split-double
   (let [memory (store-double (am) 0x2000 0x1234)]
