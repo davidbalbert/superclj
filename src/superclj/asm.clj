@@ -7,6 +7,7 @@
    (= ins '(xce)) [0xFB]
    (= ins '(txy)) [0x9B]
    (= ins '(tax)) [0xAA]
+   (= ins '(tay)) [0xA8]
    :else (throw (IllegalArgumentException.
                  (str ins " is not a valid instruction sequence")))))
 
