@@ -1,6 +1,5 @@
 (ns superclj.65816
-  (:require [superclj.memory :as mem]
-            [superclj.asm :as asm]))
+  (:require [superclj.memory :as mem]))
 
 (def opcodes (atom {}))
 
@@ -62,8 +61,18 @@
                     (assoc :status new-status))]
     [new-cpu mem]))
 
+(defn txy [cpu mem]
+  (let [new-cpu (assoc cpu :y (cpu :x))]
+    [new-cpu mem]))
+
+(defn tax [cpu mem]
+  (let [new-cpu (assoc cpu :x (cpu :a))]
+    [new-cpu mem]))
+
 (swap! opcodes (fn [_]
                  {
-                   0x18 clc
-                   0x38 sec
-                   0xFB xce}))
+                  0x18 clc
+                  0x38 sec
+                  0xFB xce
+                  0x9B txy
+                  0xAA tax}))

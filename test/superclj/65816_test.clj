@@ -5,6 +5,9 @@
 
 (def c (new-cpu))
 
+(defn run-asm [cpu instructions]
+  (run cpu (asm/asm instructions)))
+
 (defn with-carry-set [cpu]
   (assoc cpu :status (bit-set (status cpu) 0)))
 
@@ -13,21 +16,28 @@
 
 (deftest clc-should-clear-carry
   (let [start-cpu (with-carry-set c)
-        end-cpu (first (run start-cpu
-                            (asm/asm '((clc)))))]
+        end-cpu (first (run-asm start-cpu '((clc))))]
     (is (= 0 (carry end-cpu)))))
 
 (deftest sec-should-set-carry
   (let [start-cpu (with-carry-cleared c)
-        end-cpu (first (run start-cpu
-                            (asm/asm '((sec)))))]
+        end-cpu (first (run-asm start-cpu '((sec))))]
     (is (= 1 (carry end-cpu)))))
 
 (deftest xce-should-exchange-carry-and-emulation-bits
   (let [start-cpu (with-carry-cleared c)
-        end-cpu (first (run start-cpu
-                            (asm/asm '((xce)))))]
+        end-cpu (first (run-asm start-cpu '((xce))))]
     (is (= 0 (:emulation-mode end-cpu)))
     (is (= 1 (carry end-cpu)))))
+
+(deftest txy-should-transfer-x-to-y
+  (let [start-cpu (assoc c :x 0x10)
+        end-cpu (first (run-asm start-cpu '((txy))))]
+    (is (= 0x10 (:y end-cpu)))))
+
+(deftest tax-should-transfer-a-to-x
+  (let [start-cpu (assoc (new-cpu) :a 0x10)
+        end-cpu (first (run-asm start-cpu '((tax))))]
+    (is (= 0x10 (:x end-cpu)))))
 
 (run-tests)

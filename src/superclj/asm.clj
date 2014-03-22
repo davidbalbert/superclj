@@ -5,10 +5,10 @@
    (= ins '(clc)) [0x18]
    (= ins '(sec)) [0x38]
    (= ins '(xce)) [0xFB]
+   (= ins '(txy)) [0x9B]
+   (= ins '(tax)) [0xAA]
    :else (throw (IllegalArgumentException.
                  (str ins " is not a valid instruction sequence")))))
-
-(assemble-one '(clc))
 
 (defn asm [instructions]
   (vec (mapcat assemble-one instructions)))
