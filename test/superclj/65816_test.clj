@@ -50,4 +50,9 @@
         end-cpu (first (run-asm start-cpu '((txa))))]
     (is (= 0x10 (:a end-cpu)))))
 
+(deftest tya-should-transfer-y-to-a
+  (let [start-cpu (assoc (new-cpu) :y 0x10)
+        end-cpu (first (run-asm start-cpu '((tya))))]
+    (is (= 0x10 (:a end-cpu)))))
+
 (run-tests)

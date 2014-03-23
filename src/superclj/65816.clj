@@ -65,16 +65,28 @@
   (let [new-cpu (assoc cpu :y (cpu :x))]
     [new-cpu mem]))
 
+; TODO: the index registers and accumulator can be different
+; widths. Figure out how that should work.
 (defn tax [cpu mem]
   (let [new-cpu (assoc cpu :x (cpu :a))]
     [new-cpu mem]))
 
+; TODO: the index registers and accumulator can be different
+; widths. Figure out how that should work.
 (defn tay [cpu mem]
   (let [new-cpu (assoc cpu :y (cpu :a))]
     [new-cpu mem]))
 
+; TODO: the index registers and accumulator can be different
+; widths. Figure out how that should work.
 (defn txa [cpu mem]
   (let [new-cpu (assoc cpu :a (cpu :x))]
+    [new-cpu mem]))
+
+; TODO: the index registers and accumulator can be different
+; widths. Figure out how that should work.
+(defn tya [cpu mem]
+  (let [new-cpu (assoc cpu :a (cpu :y))]
     [new-cpu mem]))
 
 (swap! opcodes (fn [_]
@@ -85,4 +97,5 @@
                   0x9B txy
                   0xAA tax
                   0xA8 tay
-                  0x8A txa}))
+                  0x8A txa
+                  0x98 tya}))
