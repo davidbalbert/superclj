@@ -5,8 +5,15 @@
         low (bit-and 0xFF value)]
     [high low]))
 
-(defn- flip-bytes [[high low]]
+(defn- swap-bytes [[high low]]
   [low high])
+
+(defn- num->byte-vector [number]
+  (loop [n number result []]
+    (if (zero? n)
+      (reverse result)
+      (recur (bit-shift-right n 8)
+             (conj result (bit-and 0xFF n))))))
 
 (defn- assemble-one [[op & args :as ins] labels]
   (cond
@@ -23,7 +30,9 @@
    (= op 'dc) (let [[const-type value] args]
                 (cond
                  (= 'i1 const-type) [(bit-and 0xFF value)]
-                 (= 'a const-type)  (flip-bytes (double-to-byte value))
+                 (= 'a const-type)  (swap-bytes (double-to-byte value))
+                 (= 'c const-type)  (map byte (vec value))
+                 (= 'h const-type)  (num->byte-vector value)
                  :else (throw (IllegalArgumentException.
                                (str const-type " is not a valid constant type")))))
    :else (throw (IllegalArgumentException.
