@@ -3,6 +3,7 @@
 
 (def opcodes (atom {}))
 
+;; TODO: Split :status into a Map
 (defn new-cpu []
   {:emulation-mode 0x1
    :a 0x00

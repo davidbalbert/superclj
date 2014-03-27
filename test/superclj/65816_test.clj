@@ -1,12 +1,13 @@
 (ns superclj.65816-test
   (:require [clojure.test :refer :all]
             [superclj.65816 :refer :all]
-            [superclj.asm :as asm]))
 
 (def c (new-cpu))
+            [superclj.asm :as asm]
+            [superclj.memory :as mem]))
 
 (defn run-asm [cpu instructions]
-  (run cpu (asm/asm instructions)))
+  (run cpu (mem/memory-from-vec (asm/asm instructions))))
 
 (defn with-carry-set [cpu]
   (assoc cpu :status (bit-set (status cpu) 0)))
