@@ -38,21 +38,24 @@
    :else (throw (IllegalArgumentException.
                  (str ins " is not a valid instruction sequence")))))
 
-(defn- read-labels [instructions]
-  (let [numbered-instructions (map-indexed (fn [i ins] [i ins]) instructions)
-        labels (reduce (fn [labels [line-number ins]]
-                         (if (= (first ins) 'label)
-                           (assoc labels (second ins) line-number)
-                           labels))
-                       {} numbered-instructions)
-        delabeled-instructions (map (fn [[op & args :as ins]]
-                                      (if (= op 'label)
-                                        (second args)
-                                        ins))
-                                    instructions)]
-    [labels delabeled-instructions]))
+(defn read-labels [instructions]
+  (reduce (fn [labels [i [op name]]]
+            (if (= 'label op)
+              (assoc labels name i)
+              labels))
+          {}
+          (map-indexed vector instructions)))
+
+(defn remove-labels [instructions]
+  (vec (map
+        (fn [[op :as ins]]
+          (if (= 'label op)
+            (nth ins 2)
+            ins))
+        instructions)))
 
 (defn asm [instructions]
-  (let [[labels delabeled-instructions] (read-labels instructions)]
+  (let [labels (read-labels instructions)
+        delabeled-instructions (remove-labels instructions)]
     (vec (mapcat (fn [ins] (assemble-one ins labels))
                  delabeled-instructions))))
