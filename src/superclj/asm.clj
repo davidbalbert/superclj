@@ -17,6 +17,10 @@
       (recur (bit-shift-right n 8)
              (conj result (bit-and 0xFF n))))))
 
+(defn- throw-arg-exception [& strings]
+  (throw (IllegalArgumentException.
+          (apply str strings))))
+
 (defn- generate-intermediate-code [[op & args :as ins]]
   (cond
    (= ins '(clc)) [0x18]
@@ -37,10 +41,8 @@
                  (= 'a const-type)  (double->address value)
                  (= 'c const-type)  (map byte (vec value))
                  (= 'h const-type)  (num->byte-vector value)
-                 :else (throw (IllegalArgumentException.
-                               (str const-type " is not a valid constant type")))))
-   :else (throw (IllegalArgumentException.
-                 (str ins " is not a valid instruction sequence")))))
+                 :else (throw-arg-exception const-type " is not a valid constant type")))
+   :else (throw-arg-exception ins " is not a valid instruction sequence")))
 
 (defn mapify-instruction [ins]
   {:instruction ins})
@@ -90,9 +92,7 @@
   (reduce (fn [labels ins]
             (if (contains? ins :label)
               (if (contains? labels (ins :label))
-                (throw
-                 (IllegalArgumentException.
-                  (str "Label `"(ins :label) "' has already been used")))
+                (throw-arg-exception "Label `"(ins :label) "' has already been used")
                 (assoc labels (ins :label) (double->address (ins :offset))))
               labels))
           {}
@@ -103,9 +103,7 @@
                   (if (symbol? byte-or-symbol)
                     (if (contains? labels byte-or-symbol)
                       (labels byte-or-symbol)
-                      (throw
-                       (IllegalArgumentException.
-                        (str "Unknown label `" byte-or-symbol "'"))))
+                      (throw-arg-exception "Unknown label `" byte-or-symbol "'"))
                     byte-or-symbol))
                 intermediate-code)))
 
