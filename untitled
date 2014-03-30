@@ -1,0 +1,14 @@
+(use ['superclj.asm :as 'asm])
+
+
+(asm/asm '((xce)
+           (label foo (sec))
+           (clc)
+           (stp)))
+
+
+(def prog '((_       (lda name))
+            (name    (dc c "Dave"))
+            (name    (dc c "Max"))))
+
+(asm/asm prog)
