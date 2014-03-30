@@ -1,11 +1,10 @@
 (ns superclj.65816
   (:require [superclj.memory :as mem]))
 
-(def opcodes (atom {}))
-
 ;; TODO: Split :status into a Map
 (defn new-cpu []
-  {:emulation-mode 0x1
+  {:running true
+   :emulation-mode 0x1
    :a 0x00
    :x 0x00
    :y 0x00
@@ -33,16 +32,6 @@
   (if (zero? value)
     (bit-clear byte position)
     (bit-set byte position)))
-
-(defn step [cpu mem]
-  (let [opcode (mem/load-byte mem (pc cpu))]
-    ((@opcodes opcode) (increment-pc cpu) mem)))
-
-(defn run [cpu mem]
-  (if (< (pc cpu) (count mem))
-    (let [[next-cpu next-mem] (step cpu mem)]
-      (recur next-cpu next-mem))
-    [cpu mem]))
 
 (defn clc [cpu mem]
   (let [new-status (bit-and (status cpu) 2r11111110)
@@ -90,13 +79,26 @@
   (let [new-cpu (assoc cpu :a (cpu :y))]
     [new-cpu mem]))
 
-(swap! opcodes (fn [_]
-                 {
-                  0x18 clc
-                  0x38 sec
-                  0xFB xce
-                  0x9B txy
-                  0xAA tax
-                  0xA8 tay
-                  0x8A txa
-                  0x98 tya}))
+(defn stp [cpu mem]
+  [(assoc cpu :running false) mem])
+
+(def opcodes
+  {0x18 clc
+   0x38 sec
+   0xFB xce
+   0x9B txy
+   0xAA tax
+   0xA8 tay
+   0x8A txa
+   0x98 tya
+   0xDB stp})
+
+(defn step [cpu mem]
+  (let [opcode (mem/load-byte mem (pc cpu))]
+    ((opcodes opcode) (increment-pc cpu) mem)))
+
+(defn run [cpu mem]
+  (if (cpu :running)
+    (let [[next-cpu next-mem] (step cpu mem)]
+      (recur next-cpu next-mem))
+    [cpu mem]))

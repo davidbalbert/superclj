@@ -25,6 +25,7 @@
    (= ins '(tay)) [0xA8]
    (= ins '(txa)) [0x8A]
    (= ins '(tya)) [0x98]
+   (= ins '(stp)) [0xDB]
    (= op 'ds) (let [bytes (first args)]
                 (vec (repeat bytes 0)))
    (= op 'dc) (let [[const-type value] args]

@@ -27,7 +27,7 @@
   IMemory
   (store-byte [this address value]
     (throw-unless-byte value)
-    (->VectorMemory (assoc v address value)))
+    (VectorMemory. (assoc v address value)))
 
   (load-byte [this address]
     (v address))
@@ -39,7 +39,7 @@
       (-> v
           (assoc ,,, address low)
           (assoc ,,, (inc address) high)
-          ->VectorMemory)))
+          VectorMemory.)))
 
   (load-double [this address]
     (let [low (v address)
