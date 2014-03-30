@@ -119,6 +119,16 @@
          machine-code)))
 
 ;; asm syntax: (& [label & instructions])
+;; example: a program that loads a number
+;; at label 'num into the accumulator and
+;; then stops the clock:
+;;
+;; '((_    (lda num)
+;;         (stp))
+;;   (num  (dc i1 42))
+;;
+;; All fragments must have a label. The '_
+;; can be be used to throw away the label.
 (defn asm [labeled-fragments]
   (let [labeled-instructions (mapcat inline-label labeled-fragments)
         intermediate-instructions (map assemble-one labeled-instructions)
