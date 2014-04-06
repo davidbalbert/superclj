@@ -1,6 +1,6 @@
 (ns superclj.65816-test
   (:require [clojure.test :refer :all]
-            [superclj.65816 :refer :all]
+            [superclj.cpu :refer :all]
             [superclj.asm :as asm]
             [superclj.memory :as mem]))
 

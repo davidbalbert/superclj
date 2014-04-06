@@ -1,4 +1,4 @@
-(ns superclj.65816
+(ns superclj.cpu
   (:require [superclj.memory :as mem]))
 
 ;; TODO: Split :status into a Map
