@@ -32,7 +32,9 @@
    (= ins '(txa)) [0x8A]
    (= ins '(tya)) [0x98]
    (= ins '(stp)) [0xDB]
-   (= op 'lda)    [0xAD (first args)]
+   (= op 'lda)    [0xAD (if (symbol? (first args))
+                          (first args)
+                          (double->address (first args)))]
    (= op 'ds) (let [bytes (first args)]
                 (vec (repeat bytes 0)))
    (= op 'dc) (let [[const-type value] args]
