@@ -13,7 +13,7 @@
    :pc 0
    :program-bank 0x00
    :data-bank 0x00
-   :status 2r00110000})
+   :status 2r00000000})
 
 (defn- pc [cpu]
   (cpu :pc))
@@ -33,6 +33,12 @@
     (bit-clear byte position)
     (bit-set byte position)))
 
+(defn accumulator-select [cpu]
+  (bit-shift-right (bit-and (status cpu) 2r00100000) 5))
+
+(defn index-select [cpu]
+  (bit-shift-right (bit-and (status cpu) 2r00010000) 4))
+
 (defn clc [cpu mem]
   (let [new-status (bit-and (status cpu) 2r11111110)
         new-cpu (assoc cpu :status new-status)]
@@ -44,7 +50,11 @@
     [new-cpu mem]))
 
 (defn xce [cpu mem]
-  (let [new-status (assign-bit (status cpu) 0 (cpu :emulation-mode))
+  (let [m-x-value (if (zero? (carry cpu)) 1 0)
+        new-status (-> (status cpu)
+                       (assign-bit 0 (cpu :emulation-mode))
+                       (assign-bit 4 m-x-value)
+                       (assign-bit 5 m-x-value))
         new-emulation-mode (carry cpu)
         new-cpu (-> cpu
                     (assoc :emulation-mode new-emulation-mode)

@@ -27,6 +27,12 @@
     (is (= 0 (cpu :emulation-mode)))
     (is (= 1 (carry cpu)))))
 
+(deftest xce-should-set-m-and-x-bits
+  (let [cpu (first (run-asm (new-cpu) '((_ (xce)
+                                           (stp)))))]
+    (is (= 1 (accumulator-select cpu)))
+    (is (= 1 (index-select cpu)))))
+
 (deftest txy-should-transfer-x-to-y
   (let [start-cpu (assoc (new-cpu) :x 0x10)
         end-cpu (first (run-asm start-cpu '((_ (txy)
