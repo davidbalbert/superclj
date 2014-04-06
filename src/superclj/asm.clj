@@ -75,16 +75,10 @@
         (assoc :intermediate-code intermediate-code)
         (assoc :size size))))
 
-(defn running-totals [nums]
-  (reduce (fn [totals n]
-            (conj totals (+ n (or (last totals) 0))))
-          []
-          nums))
-
 (defn calculate-offsets [instructions]
   (let [sizes (map :size instructions)
-        totals (running-totals sizes)
-        offsets (concat [0] (butlast totals))]
+        totals (reductions + sizes)
+        offsets (cons 0 (butlast totals))]
     (map (fn [ins offset]
            (assoc ins :offset offset))
          instructions
@@ -92,13 +86,11 @@
 
 (defn make-labels [instructions]
   (reduce (fn [labels ins]
-            (if (contains? ins :label)
-              (if (contains? labels (ins :label))
-                (throw-arg-exception "Label `"(ins :label) "' has already been used")
-                (assoc labels (ins :label) (double->address (ins :offset))))
-              labels))
+            (if (contains? labels (ins :label))
+              (throw-arg-exception "Label `"(ins :label) "' has already been used")
+              (assoc labels (ins :label) (double->address (ins :offset)))))
           {}
-          instructions))
+          (filter :label instructions)))
 
 (defn replace-label [intermediate-code labels]
   (flatten (map (fn [byte-or-symbol]
