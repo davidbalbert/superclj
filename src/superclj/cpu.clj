@@ -111,15 +111,23 @@
    (= 2 number-of-bytes) (not (zero? (bit-and value 0x8000)))
    :else (util/throw-arg-exception number-of-bytes " is not a valid number of bytes")))
 
-(def status-symbol->position
+(def status-name->position
   {:negative 7
    :overflow 6
    :memory-select 5
-   :x 4
-   :d })
+   :index-select 4
+   :decimal-mode 3
+   :irq-disable 2
+   :zero 1
+   :carry 0})
 
-(defn set-status-bit-to-value [bit value]
-  )
+(defn set-status-bit-to-value [old-status status-name value]
+  (cond
+   (zero? value) (bit-clear old-status (status-name->position status-name))
+   (= 1 value) (bit-set old-status (status-name->position status-name))
+   :else (util/throw-arg-exception value " must be 1 or 0")))
+
+(twos-complement-negative? 1 2r10000000)
 
 (defn lda [cpu mem]
   (let [number-of-bytes (if (or (emulation-mode? cpu)
@@ -130,11 +138,11 @@
                 (mem/load-double mem address)
                 (mem/load-byte mem address))
         zero (if (zero? value) 1 0)
-        negative (twos-complement-negative? number-of-bytes value)
+        negative (if (twos-complement-negative? number-of-bytes value) 1 0)
         new-pc (+ 2 (pc cpu))
-        new-status (if (= 1 zero)
-                     (bit-set (status cpu) 1)
-                     (bit-clear (status cpu) 1))
+        new-status (-> (status cpu)
+                       (set-status-bit-to-value :zero zero)
+                       (set-status-bit-to-value :negative negative))
         new-cpu (-> cpu
                     (assoc :a value)
                     (assoc :pc new-pc)
