@@ -1,5 +1,6 @@
 (ns superclj.cpu
-  (:require [superclj.memory :as mem]))
+  (require [superclj.util :as util]
+           [superclj.memory :as mem]))
 
 ;; TODO: Split :status into a Map
 (defn new-cpu []
@@ -24,6 +25,9 @@
 (defn carry [cpu]
   (bit-and (status cpu) 0x1))
 
+(defn a [cpu]
+  (cpu :a))
+
 (defn- increment-pc [cpu]
   (let [new-pc (inc (pc cpu))]
     (assoc cpu :pc new-pc)))
@@ -33,11 +37,20 @@
     (bit-clear byte position)
     (bit-set byte position)))
 
-(defn accumulator-select [cpu]
+(defn memory-select [cpu]
   (bit-shift-right (bit-and (status cpu) 2r00100000) 5))
 
 (defn index-select [cpu]
   (bit-shift-right (bit-and (status cpu) 2r00010000) 4))
+
+(defn zero-bit [cpu]
+  (bit-shift-right (bit-and (status cpu) 2r00000010) 1))
+
+(defn negative-bit [cpu]
+  (bit-shift-right (bit-and (status cpu) 2r10000000) 7))
+
+(defn emulation-mode? [cpu]
+  (= 1 (cpu :emulation-mode)))
 
 (defn clc [cpu mem]
   (let [new-status (bit-and (status cpu) 2r11111110)
@@ -92,6 +105,42 @@
 (defn stp [cpu mem]
   [(assoc cpu :running false) mem])
 
+(defn twos-complement-negative? [number-of-bytes value]
+  (cond
+   (= 1 number-of-bytes) (not (zero? (bit-and value 0x80)))
+   (= 2 number-of-bytes) (not (zero? (bit-and value 0x8000)))
+   :else (util/throw-arg-exception number-of-bytes " is not a valid number of bytes")))
+
+(def status-symbol->position
+  {:negative 7
+   :overflow 6
+   :memory-select 5
+   :x 4
+   :d })
+
+(defn set-status-bit-to-value [bit value]
+  )
+
+(defn lda [cpu mem]
+  (let [number-of-bytes (if (or (emulation-mode? cpu)
+                                (= 1 (memory-select cpu)))
+                          1 2)
+        address (mem/load-double mem (pc cpu))
+        value (if (= 2 number-of-bytes)
+                (mem/load-double mem address)
+                (mem/load-byte mem address))
+        zero (if (zero? value) 1 0)
+        negative (twos-complement-negative? number-of-bytes value)
+        new-pc (+ 2 (pc cpu))
+        new-status (if (= 1 zero)
+                     (bit-set (status cpu) 1)
+                     (bit-clear (status cpu) 1))
+        new-cpu (-> cpu
+                    (assoc :a value)
+                    (assoc :pc new-pc)
+                    (assoc :status new-status))]
+    [new-cpu mem]))
+
 (def opcodes
   {0x18 clc
    0x38 sec
@@ -101,7 +150,8 @@
    0xA8 tay
    0x8A txa
    0x98 tya
-   0xDB stp})
+   0xDB stp
+   0xAD lda})
 
 (defn step [cpu mem]
   (let [opcode (mem/load-byte mem (pc cpu))]

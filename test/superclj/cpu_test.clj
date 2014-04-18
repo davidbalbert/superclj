@@ -30,7 +30,7 @@
 (deftest xce-should-set-m-and-x-bits
   (let [cpu (first (run-asm (new-cpu) '((_ (xce)
                                            (stp)))))]
-    (is (= 1 (accumulator-select cpu)))
+    (is (= 1 (memory-select cpu)))
     (is (= 1 (index-select cpu)))))
 
 (deftest txy-should-transfer-x-to-y
@@ -68,5 +68,56 @@
         end-cpu (first (run-asm start-cpu '((_ (stp)
                                                (sec)))))]
     (is (= 0 (carry end-cpu)))))
+
+(deftest lda-in-emulation-mode-should-load-1-byte
+  (let [cpu (first (run-asm (new-cpu) '((_     (lda num)
+                                               (stp))
+                                        (num   (dc i1 42))
+                                        (extra (dc i1 43)))))]
+    (is (= 42 (a cpu)))))
+
+(deftest lda-in-8-bit-mode-should-load-1-byte
+  (let [cpu (first (run-asm (new-cpu) '((_     (clc)
+                                               (xce)
+                                               (lda num)
+                                               (stp))
+                                        (num   (dc i1 42))
+                                        (extra (dc i1 43)))))]
+    (is (= 42 (a cpu)))))
+
+
+(deftest lda-should-set-zero-if-the-result-is-zero
+  (let [cpu (first (run-asm (new-cpu) '((_     (clc)
+                                               (xce)
+                                               (lda num)
+                                               (stp))
+                                        (num   (dc i1 0)))))]
+    (is (= 1 (zero-bit cpu)))))
+
+(deftest lda-should-clear-zero-if-the-result-is-not-zero
+  (let [cpu (first (run-asm (new-cpu) '((_     (clc)
+                                               (xce)
+                                               (lda num)
+                                               (stp))
+                                        (num   (dc i1 5)))))]
+    (is (= 0 (zero-bit cpu)))))
+
+(deftest lda-should-set-negative-if-the-result-is-twos-complement-negative
+  (let [cpu (first (run-asm (new-cpu) '((_     (clc)
+                                               (xce)
+                                               (lda num)
+                                               (stp))
+                                        (num   (dc i1 2r10000000)))))]
+    (is (= 1 (negative-bit cpu)))))
+
+(deftest lda-in-16-bit-mode-should-load-2-bytes
+  (let [cpu (first (run-asm (new-cpu) '((_     (clc)
+                                               (xce)
+                                               (sep 2r00110000)
+                                               (lda num)
+                                               (stp))
+                                        (num   (dc a 0xFFAA)))))]
+    (is true)
+    #_(is 0xFFAA (a cpu))))
 
 (run-tests)

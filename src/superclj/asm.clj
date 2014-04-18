@@ -1,4 +1,5 @@
-(ns superclj.asm)
+(ns superclj.asm
+  (require [superclj.util :as util]))
 
 (defn- double->bytes [value]
   (let [high (bit-shift-right (bit-and 0xFF00 value) 8)
@@ -16,10 +17,6 @@
       (reverse result)
       (recur (bit-shift-right n 8)
              (conj result (bit-and 0xFF n))))))
-
-(defn- throw-arg-exception [& strings]
-  (throw (IllegalArgumentException.
-          (apply str strings))))
 
 (defn- generate-intermediate-code [[op & args :as ins]]
   (cond
@@ -43,8 +40,8 @@
                  (= 'a const-type)  (double->address value)
                  (= 'c const-type)  (map byte (vec value))
                  (= 'h const-type)  (num->byte-vector value)
-                 :else (throw-arg-exception const-type " is not a valid constant type")))
-   :else (throw-arg-exception ins " is not a valid instruction sequence")))
+                 :else (util/throw-arg-exception const-type " is not a valid constant type")))
+   :else (util/throw-arg-exception ins " is not a valid instruction sequence")))
 
 (defn mapify-instruction [ins]
   {:instruction ins})
@@ -87,7 +84,7 @@
 (defn make-labels [instructions]
   (reduce (fn [labels ins]
             (if (contains? labels (ins :label))
-              (throw-arg-exception "Label `"(ins :label) "' has already been used")
+              (util/throw-arg-exception "Label `"(ins :label) "' has already been used")
               (assoc labels (ins :label) (double->address (ins :offset)))))
           {}
           (filter :label instructions)))
@@ -97,7 +94,7 @@
                   (if (symbol? byte-or-symbol)
                     (if (contains? labels byte-or-symbol)
                       (labels byte-or-symbol)
-                      (throw-arg-exception "Unknown label `" byte-or-symbol "'"))
+                      (util/throw-arg-exception "Unknown label `" byte-or-symbol "'"))
                     byte-or-symbol))
                 intermediate-code)))
 
